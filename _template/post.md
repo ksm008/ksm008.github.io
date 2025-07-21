@@ -9,7 +9,7 @@
 %>---
 layout: post
 title: <% postTitle %>
-date:  <% tp.date.now("YYYY-MM-DD HH:mm:ss") %>
+date:  <% tp.date.now("YYYY-MM-DD HH:mm:ss ZZ") %> 
 categories:
 tags:
 ---
