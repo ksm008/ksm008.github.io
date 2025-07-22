@@ -13,6 +13,7 @@ layout: page
 {% assign sort_categories = site.categories | sort %}
 
 {% for category in sort_categories %}
+
   {% assign category_name = category | first %}
   {% assign posts_of_category = category | last %}
   {% assign first_post = posts_of_category | first %}
@@ -29,7 +30,13 @@ layout: page
       {% endif %}
     {% endfor %}
 
-    {% assign sub_categories = sub_categories | sort %}
+    {% if category_name == "스도쿠" %}
+      {%- comment -%} 스도쿠 서브카테고리를 수동순으로 지정 {% endcomment -%}
+      {% assign sub_categories = "초급,중급,고급" | split: "," %}
+    {% else %}
+      {%- comment -%} 그 외 카테고리는 기본 알파벳(또는 한글 가나다) 순서 {% endcomment -%}
+      {% assign sub_categories = sub_categories | sort %}
+    {% endif %}
     {% assign sub_categories_size = sub_categories | size %}
 
     <div class="card categories">
