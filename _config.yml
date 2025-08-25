@@ -144,6 +144,12 @@ baseurl: ""
 
 mathjax: true
 
+markdown: kramdown
+highlighter: rouge
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
+
 # -------------- 아래 항목들은 수정 권장하지 않음 ------------------
 
 kramdown:  # 마크다운 렌더링 옵션
