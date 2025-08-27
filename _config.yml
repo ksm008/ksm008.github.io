@@ -24,7 +24,7 @@ description: >-  # SEO 메타와 Atom 피드에서 사용됨
 
 # 사이트의 프로토콜과 도메인 주소를 입력하세요.
 # 예: 'https://username.github.io' (마지막에 '/'는 넣지 않습니다)
-url: "https://ksm008.github.io/"
+url: "https://ksm008.github.io"
 
 github:
   username: ksm008  # 본인의 GitHub 사용자 이름으로 변경하세요.
