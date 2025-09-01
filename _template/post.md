@@ -12,5 +12,6 @@ title: <% postTitle %>
 date:  <% tp.date.now("YYYY-MM-DD HH:mm:ss ZZ") %> 
 categories:
 published: true
+math: true
 tags:
 ---
