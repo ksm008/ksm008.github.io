@@ -6,7 +6,7 @@ layout: page
 {% include lang.html %}
 
 {% assign date_sorted_cats = "잡것들,끄적끄적,일기" | split: "," %}
-{%- if page.title in date_sorted_cats -%}
+{%- if page.title contains date_sorted_cats -%}
   {%- assign sorted_posts = page.posts | sort: "date" | reverse -%}
 {%- else -%}
   {%- assign sorted_posts = page.posts | sort_natural: "title" -%}
