@@ -15,9 +15,9 @@ future: true
 # jekyll-seo-tag 설정 › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: 늙고 병든 공부방
+title: Idiotism  # 사이트 제목으로 표시됩니다.
 
-tagline: 여기저기 잔병 많은 사람의 노트  # 사이트 부제목으로 표시됩니다.
+tagline: 늙고 병든 공부방  # 사이트 부제목으로 표시됩니다.
 
 description: >-  # SEO 메타와 Atom 피드에서 사용됨
   허리 아파
