@@ -59,8 +59,8 @@ jobs:
       
       - name: Replace image paths to raw URL
         run: |
-          find _site -type f -name "*.html" -exec sed -i 's|"/assets/img/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/refs/heads/main/_blogImage/|g' {} +
-          find _site -type f -name "*.html" -exec sed -i 's|"assets/img/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/refs/heads/main/_blogImage/|g' {} +
+          find _site -type f -name "*.html" -exec sed -i 's|"/assets/img/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/refs/heads/main/assets/img/_blogImage/|g' {} +
+          find _site -type f -name "*.html" -exec sed -i 's|"assets/img/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/refs/heads/main/assets/img/_blogImage/|g' {} +
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
