@@ -25,6 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: self-hosted
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,7 +57,7 @@ jobs:
       #      \-\-disable-external \
       #      \-\-ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/"
       
-     - name: Replace image paths to raw URL
+      - name: Replace image paths to raw URL
         run: |
           find _site -type f -name "*.html" -exec sed -i 's|"/assets/img/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/main/assets/img/_blogImage/|g' {} +
           find _site -type f -name "*.html" -exec sed -i 's|"assets/img/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/main/assets/img/_blogImage/|g' {} +
