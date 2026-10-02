@@ -56,6 +56,11 @@ jobs:
       #    bundle exec htmlproofer _site \
       #      \-\-disable-external \
       #      \-\-ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/"
+      
+      - name: Replace image paths to raw URL
+        run: |
+          find _site -type f -name "*.html" -exec sed -i 's|"/_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/refs/heads/main/_blogImage/|g' {} +
+          find _site -type f -name "*.html" -exec sed -i 's|"_blogImage/|"https://raw.githubusercontent.com/ksm008/ksm008.github.io/refs/heads/main/_blogImage/|g' {} +
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
