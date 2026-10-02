@@ -4,7 +4,7 @@ title: 깃허브 블로그 빌드 에러 - Empty slug generated
 date: 2026-04-15 09:50:27 +0900
 categories:
   - 개발 공부
-  - 기타
+  - 깃허브 블로그
 published: true
 math: true
 tags:
