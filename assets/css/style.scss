@@ -16,8 +16,21 @@
 }
 
 mark {
-  background-color: #ffea00; /* 원하는 배경 색상 코드(HEX)로 변경해 */
-  color: #000; /* 텍스트 색상 */
   padding: 0.1em 0.3em;
   border-radius: 4px;
 }
+
+/* 기본값 (이모지 없음) */
+mark.hl-default { background-color: #ffea00; color: #000; }
+/* 🔴 빨간색 */
+mark.hl-red { background-color: #ffcdd2; color: #b71c1c; }
+/* 🟠 주황색 */
+mark.hl-orange { background-color: #ffe0b2; color: #e65100; }
+/* 🟡 노란색 */
+mark.hl-yellow { background-color: #fff9c4; color: #f57f17; }
+/* 🟢 초록색 */
+mark.hl-green { background-color: #c8e6c9; color: #1b5e20; }
+/* 🔵 파란색 */
+mark.hl-blue { background-color: #bbdefb; color: #0d47a1; }
+/* 🟣 보라색 */
+mark.hl-purple { background-color: #e1bee7; color: #4a148c; }
