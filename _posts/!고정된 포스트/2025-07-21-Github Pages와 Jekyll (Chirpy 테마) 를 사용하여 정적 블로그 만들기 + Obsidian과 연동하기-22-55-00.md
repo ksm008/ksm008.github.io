@@ -9,6 +9,7 @@ tags:
   - 깃허브_페이지
   - Jekyll
 published: true
+pin: true
 ---
 # 시작하기에 앞서
 네이버, 티스토리부터 벨로그, 그리고 결국 직접 만드는 깃허브 블로그까지 오게 되었습니다. 
@@ -123,9 +124,109 @@ Chirpy 테마는 기본 Jekyll 보다 커스터마이징의 자유도가 높습�
 
 `_tabs`폴더 안의` about.md` 파일을 수정하시면 됩니다.
 
-추후에 댓글 기능을 포함해 더 알아보고 수정해보도록 하겠습니다.
-## 깃허브와 옵시디언 연동
+#### layout, plugin폴더 사용
+`_layout`, `_plugin` 폴더에 커스텀 HTML과 루비 플러그인을 만들어서 블로그를 원하는 방식으로 고칠수도 있습니다.
+레이아웃의 확장자는 html, 플러그인의 경우 확장자는 `.rb`입니다. 이름은 알아서 지으면 됩니다.
 
+- **테이블 드래그바 제거**
+![](assets/img/_blogImage/스크린샷%202026-10-08%20155111.png)
+
+표 아래의 드래그바를 없애는 플러그인입니다.
+
+```
+# encoding: utf-8
+
+Jekyll::Hooks.register [:documents, :pages], :post_render do |doc|
+  if doc.respond_to?(:output_ext) && doc.output_ext == '.html' && doc.output
+    # <div class="table-wrapper"> ... </div> 블록 내부만 제한적으로 찾아서 치환
+    doc.output.gsub!(/<div class="table-wrapper"(.*?)>(.*?)<\/div>/m) do
+      wrapper_attr = $1
+      inner_html = $2
+
+      # 해당 블록(일반 표) 내부의 table, th, td 태그에만 인라인 스타일 주입
+      inner_html.gsub!(/<table(.*?)>/, '<table\1 style="width: 100% !important; table-layout: fixed !important;">')
+      inner_html.gsub!(/<th(.*?)>/, '<th\1 style="white-space: normal !important; word-break: keep-all !important; overflow-wrap: break-word !important;">')
+      inner_html.gsub!(/<td(.*?)>/, '<td\1 style="white-space: normal !important; word-break: keep-all !important; overflow-wrap: break-word !important;">')
+
+      # 치환된 내부 내용을 다시 table-wrapper로 감싸서 반환 (가로 스크롤 숨김 추가)
+      "<div class=\"table-wrapper\"#{wrapper_attr} style=\"overflow-x: hidden !important;\">#{inner_html}</div>"
+    end
+  end
+end
+```
+
+![](assets/img/_blogImage/Pasted%20image%2020261008170334.png)
+
+그러면 크기에 맞춰 자동으로 정렬됩니다.
+
+- **수정 시각 표시**
+
+```
+#!/usr/bin/env ruby
+#
+# Check for changed posts
+
+Jekyll::Hooks.register :posts, :post_init do |post|
+
+  commit_num = `git rev-list --count HEAD "#{ post.path }"`
+
+  if commit_num.to_i > 1
+    lastmod_date = `git log -1 --pretty="%ad" --date=iso "#{ post.path }"`
+    post.data['last_modified_at'] = lastmod_date
+  end
+
+end
+```
+
+Chirpy 테마는 마지막으로 수정된 날짜를 표시할 수 있으나 사용자가 일일이 수정해줘야 합니다. 그걸 자동화 시켜주는 플러그인입니다. 이 플러그인이 동작하기 위해서는 `/github/workflows/page-deploy.yml` 파일의 `fetch-depth` 값이 0이어야 합니다. 확인해보시고 1이면 0으로 바꿔주면 됩니다.
+
+```
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+```
+
+- **옵시디언 하이라이트 적용**
+```
+# encoding: utf-8
+
+Jekyll::Hooks.register :documents, :pre_render do |doc|
+  if doc.extname == '.md'
+    # 마크다운 텍스트를 코드 블록(```...```)과 인라인 코드(`...`) 기준으로 분리
+    doc.content = doc.content.split(/(```.*?```|`[^`\n]+`)/m).map do |chunk|
+      # 코드로 감싸진 부분은 하이라이트 변환을 건너뛰고 그대로 반환
+      if chunk.start_with?('`')
+        chunk 
+      else
+        # 코드가 아닌 일반 텍스트 영역에만 하이라이트 정규식 적용
+        chunk.gsub(/==([🔴🟠🟡🟢🔵🟣]?)(.*?)==/) do
+          emoji = $1
+          text = $2
+          
+          style = case emoji
+                  when '🔴' then 'background-color: #ffcdd2; color: #b71c1c;'
+                  when '🟠' then 'background-color: #ffe0b2; color: #e65100;'
+                  when '🟡' then 'background-color: #fff9c4; color: #f57f17;'
+                  when '🟢' then 'background-color: #c8e6c9; color: #1b5e20;'
+                  when '🔵' then 'background-color: #bbdefb; color: #0d47a1;'
+                  when '🟣' then 'background-color: #e1bee7; color: #4a148c;'
+                  else 'background-color: #ffea00; color: #000;'
+                  end
+                        
+          "<mark style=\"padding: 0.1em 0.3em; border-radius: 4px; #{style}\">#{text}</mark>"
+        end
+      end
+    end.join
+  end
+end
+```
+
+지킬 마크다운은 옵시디언의 ==🔴하이라이트를== 인식하지 못합니다. 때문에 옵시디언의 하이라이트를 사용한다면 이를 변환해주는 플러그인을 만들어야 합니다. CSS로 설정하려 했지만 CSS가 계속 무시되는 문제가 있어 루비 플러그인으로 바로 때려 박아주는게 좋은것 같습니다.
+
+
+## 깃허브와 옵시디언 연동
 저는 데스크톱이나 모바일에서 필기를 할 때는 옵시디언을 사용합니다. 구글 드라이브를 사용하여 간편하게 양쪽 환경에서도 쓸 수 있고, 마크다운 문서들이기 때문에 가독성도 좋습니다. Jekyll 역시 마크다운 문서를 쓰기 때문에 옵시디언을 여기에 사용할 수 있습니다.
 
 ### 사용할 커뮤니티 플러그인
@@ -136,7 +237,9 @@ Chirpy 테마는 기본 Jekyll 보다 커스터마이징의 자유도가 높습�
 
 - **Git** <br> 깃허브에 자동 / 수동으로 커밋 + 푸시, 풀을 제공하는 플러그인입니다. 모바일도 가능하다곤 하지만 아직 시험적인것 같습니다.
 - **Templater**<br> 템플릿을 자동으로 넣게 해주는 플러그인입니다. Jekyll의 경우 `_post`폴더 안에 있는 문서들 중 이름이 `YYYY-MM-DD-제목`과 같은 형태인 문서들만 글들로 불러옵니다. 그리고 속성도 들어가야 합니다. 때문에 `_post` 폴더에 새 문서를 작성하면 이름을 자동으로 바꾸고 속성을 주입하도록 설정해야 합니다.
-- **Code Styler** <br> 코드의 가독성을 높여주는 플러그인입니다. 코드 블럭 안에 줄을 보이게 해줍니다. 
+- **Code Styler** <br> 코드의 가독성을 높여주는 플러그인입니다. 코드 블럭 안에 줄을 보이게 해줍니다. 블로그에는 영향을 주지 않습니다.
+- **SortSpec**
+	- 커스텀 정렬을 지원하는 플러그인입니다. 날짜 순서가 아닌 포스트의 제목으로 정렬이 가능하게 해줍니다.
 
 ### Git 설정
 이 플러그인은 옵시디언 보관함에 있는 .git 폴더를 자동으로 인식해 사용자의 레포지토리를 인식합니다. 그래서 설정할 것은 별로 없습니다.
@@ -153,10 +256,18 @@ Chirpy 테마는 기본 Jekyll 보다 커스터마이징의 자유도가 높습�
 만들어진 마크다운 파일 안에 아래 코드를 붙여 넣어주세요.
 
 ```markdown
----
+<%*
+  // 1) 제목을 물어보기
+  const postTitle = await tp.system.prompt("포스트 제목을 입력하세요");
+  // 2) 날짜/시간 스트링
+  const date = tp.date.now("YYYY-MM-DD");
+  const time = tp.date.now("HH-mm-ss");
+  // 3) 파일명 리네임
+  await tp.file.rename(`${date}-${postTitle}-${time}`);
+%>---
 layout: post
-title: null
-date:  2026-10-02 21:07:59 +0900 
+title: <% postTitle %>
+date:  <% tp.date.now("YYYY-MM-DD HH:mm:ss ZZ") %> 
 categories:
 published: true
 math: true
@@ -169,9 +280,14 @@ tags:
 - published : 공개 / 비공개 설정입니다. 일단 작성하고 나중에 올리고 싶으면 체크 풀어두시면 됩니다.
 - math : 블로그에서 수학 수식 사용을 가능하게 해줍니다.
 
-![](assets/img/_blogImage/개발/기타/깃허브블로그/스크린샷%202025-07-24%20154941.png)
+![](assets/img/_blogImage/스크린샷%202026-10-08%20170550.png)
 
-템플릿 폴더 경로를 아까 만든 템플릿 폴더를 선택해주세요. 그리고 Trigger Templater on new file creation을 켜주시고, Enable folder templates에서 `_post`폴더 선택 후 자신이 적용시킬 템플릿 파일을 선택하시면 됩니다.
+
+![](assets/img/_blogImage/스크린샷%202026-10-08%20170554.png)
+
+![](assets/img/_blogImage/스크린샷%202026-10-08%20170605.png)
+
+템플릿 폴더 경로를 아까 만든 템플릿 폴더를 선택해주세요. Trigger Templater on new file creation을 켜주시고, 아래에 있는 Folder templates에서 템플릿 파일이 들어있는 경로를 정해주시면 됩니다.
 
 ![](assets/img/_blogImage/개발/기타/깃허브블로그/스크린샷%202025-07-24%20155420.png)
 
