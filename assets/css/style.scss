@@ -14,3 +14,10 @@
   word-break: keep-all; /* 한국어 텍스트가 단어 단위로 깔끔하게 줄바꿈되도록 설정 */
   overflow-wrap: break-word; /* 띄어쓰기 없는 긴 영문이나 URL도 강제로 줄바꿈 */
 }
+
+mark {
+  background-color: #ffea00; /* 원하는 배경 색상 코드(HEX)로 변경해 */
+  color: #000; /* 텍스트 색상 */
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
