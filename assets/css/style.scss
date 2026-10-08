@@ -1,18 +1,17 @@
-/* 표 가로 스크롤 방지 및 텍스트 자동 줄바꿈 */
 .table-wrapper {
-  overflow-x: visible !important; /* 스크롤 대신 기본 노출로 변경 */
+  overflow-x: hidden !important;
 }
 
 .table-wrapper table {
-  width: 100%;
-  table-layout: fixed; /* 테이블 너비를 고정해 텍스트가 영역을 뚫고 나가지 않게 제어 */
+  width: 100% !important;
+  table-layout: fixed !important;
 }
 
 .table-wrapper table th,
 .table-wrapper table td {
-  white-space: normal !important; /* 텍스트 줄바꿈을 막는 기본 속성 해제 */
-  word-break: keep-all; /* 한국어 텍스트가 단어 단위로 깔끔하게 줄바꿈되도록 설정 */
-  overflow-wrap: break-word; /* 띄어쓰기 없는 긴 영문이나 URL도 강제로 줄바꿈 */
+  white-space: normal !important;
+  word-break: keep-all !important;
+  overflow-wrap: break-word !important;
 }
 
 mark {
