@@ -33,24 +33,24 @@
 
 <script>
   (function () {
-    // 코드 블록 하나의 줄 번호를 실제 표시되는 줄 수에 맞게 다시 만든다.
+    /* 코드 블록 하나의 줄 번호를 실제 표시되는 줄 수에 맞게 다시 만든다. */
     function alignLineNumbers(table) {
       var codePre = table.querySelector('td.rouge-code pre');
       var gutterPre = table.querySelector('td.rouge-gutter pre.lineno');
       if (!codePre || !gutterPre) return;
 
-      // 시작 줄 번호 (원래 줄 번호의 첫 값 기준)
+      /* 시작 줄 번호 (원래 줄 번호의 첫 값 기준) */
       if (!gutterPre.dataset.start) {
         gutterPre.dataset.start = parseInt(gutterPre.textContent, 10) || 1;
       }
       var start = parseInt(gutterPre.dataset.start, 10);
 
-      // 코드의 텍스트 노드를 순서대로 모은다.
+      /* 코드의 텍스트 노드를 순서대로 모은다. */
       var walker = document.createTreeWalker(codePre, NodeFilter.SHOW_TEXT);
       var nodes = [];
       while (walker.nextNode()) nodes.push(walker.currentNode);
 
-      // 각 논리적 줄(개행 기준)의 시작/끝 위치를 구한다.
+      /* 각 논리적 줄(개행 기준)의 시작/끝 위치를 구한다. */
       var lines = [];
       var cur = { sn: nodes[0], so: 0 };
       nodes.forEach(function (node) {
@@ -65,14 +65,14 @@
           idx = text.indexOf('\n', from);
         }
       });
-      // 마지막 줄이 개행으로 끝나지 않은 경우
+      /* 마지막 줄이 개행으로 끝나지 않은 경우 */
       if (cur.sn && !(cur.sn === nodes[nodes.length - 1] && cur.so >= cur.sn.nodeValue.length)) {
         var last = nodes[nodes.length - 1];
         cur.en = last; cur.eo = last.nodeValue.length;
         lines.push(cur);
       }
 
-      // 각 줄이 화면에서 몇 줄을 차지하는지 측정 후 줄 번호 텍스트 생성
+      /* 각 줄이 화면에서 몇 줄을 차지하는지 측정 후 줄 번호 텍스트 생성 */
       var range = document.createRange();
       var out = [];
       lines.forEach(function (line, i) {
@@ -104,7 +104,7 @@
       var update = function () { tables.forEach(alignLineNumbers); };
       update();
 
-      // 화면 크기가 바뀌면 다시 정렬 (프레임당 1회로 제한)
+      /* 화면 크기가 바뀌면 다시 정렬 (프레임당 1회로 제한) */
       var pending = false;
       var schedule = function () {
         if (pending) return;
@@ -122,7 +122,7 @@
         window.addEventListener('resize', schedule);
       }
 
-      // 웹폰트 로딩 후 글자 폭이 바뀔 수 있으므로 한 번 더
+      /* 웹폰트 로딩 후 글자 폭이 바뀔 수 있으므로 한 번 더 */
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
     }
 
