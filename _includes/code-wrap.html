@@ -1,0 +1,135 @@
+<!--
+  코드 블록 자동 줄바꿈
+  - 화면이 좁아져도 가로 스크롤바 대신 코드가 줄바꿈되어 표시됩니다.
+  - 줄바꿈으로 한 줄이 여러 줄로 늘어나면, 왼쪽 줄 번호도 그에 맞게 빈 줄을 채워 정렬을 맞춥니다.
+  - 코드 내용(DOM 텍스트)은 건드리지 않으므로 복사 버튼은 원래 코드 그대로 복사합니다.
+-->
+<style>
+  /* 코드 영역: 가로 스크롤 대신 줄바꿈 */
+  .highlight pre,
+  .highlight td.rouge-code pre {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important; /* 긴 단어/URL도 강제로 줄바꿈 */
+    word-break: normal !important;
+  }
+
+  /* 줄 번호 테이블이 컨테이너 폭을 넘지 않도록 */
+  .highlight table.rouge-table {
+    width: 100%;
+  }
+  .highlight td.rouge-gutter {
+    width: 1%;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+  .highlight td.rouge-code {
+    width: 100%;
+    vertical-align: top;
+  }
+  .highlight td.rouge-gutter pre.lineno {
+    white-space: pre !important; /* 줄 번호 자체는 줄바꿈하지 않음 */
+  }
+</style>
+
+<script>
+  (function () {
+    // 코드 블록 하나의 줄 번호를 실제 표시되는 줄 수에 맞게 다시 만든다.
+    function alignLineNumbers(table) {
+      var codePre = table.querySelector('td.rouge-code pre');
+      var gutterPre = table.querySelector('td.rouge-gutter pre.lineno');
+      if (!codePre || !gutterPre) return;
+
+      // 시작 줄 번호 (원래 줄 번호의 첫 값 기준)
+      if (!gutterPre.dataset.start) {
+        gutterPre.dataset.start = parseInt(gutterPre.textContent, 10) || 1;
+      }
+      var start = parseInt(gutterPre.dataset.start, 10);
+
+      // 코드의 텍스트 노드를 순서대로 모은다.
+      var walker = document.createTreeWalker(codePre, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+
+      // 각 논리적 줄(개행 기준)의 시작/끝 위치를 구한다.
+      var lines = [];
+      var cur = { sn: nodes[0], so: 0 };
+      nodes.forEach(function (node) {
+        var text = node.nodeValue;
+        var idx = text.indexOf('\n');
+        var from = 0;
+        while (idx !== -1) {
+          cur.en = node; cur.eo = idx;
+          lines.push(cur);
+          cur = { sn: node, so: idx + 1 };
+          from = idx + 1;
+          idx = text.indexOf('\n', from);
+        }
+      });
+      // 마지막 줄이 개행으로 끝나지 않은 경우
+      if (cur.sn && !(cur.sn === nodes[nodes.length - 1] && cur.so >= cur.sn.nodeValue.length)) {
+        var last = nodes[nodes.length - 1];
+        cur.en = last; cur.eo = last.nodeValue.length;
+        lines.push(cur);
+      }
+
+      // 각 줄이 화면에서 몇 줄을 차지하는지 측정 후 줄 번호 텍스트 생성
+      var range = document.createRange();
+      var out = [];
+      lines.forEach(function (line, i) {
+        var rows = 1;
+        try {
+          range.setStart(line.sn, line.so);
+          range.setEnd(line.en, line.eo);
+          var tops = {};
+          var rects = range.getClientRects();
+          for (var r = 0; r < rects.length; r++) {
+            if (rects[r].width === 0 && rects[r].height === 0) continue;
+            tops[Math.round(rects[r].top)] = true;
+          }
+          rows = Math.max(1, Object.keys(tops).length);
+        } catch (e) { /* 측정 실패 시 1줄로 처리 */ }
+
+        out.push(String(start + i));
+        for (var k = 1; k < rows; k++) out.push('');
+      });
+
+      var text = out.join('\n') + '\n';
+      if (gutterPre.textContent !== text) gutterPre.textContent = text;
+    }
+
+    function init() {
+      var tables = document.querySelectorAll('.highlight table.rouge-table');
+      if (tables.length === 0) return;
+
+      var update = function () { tables.forEach(alignLineNumbers); };
+      update();
+
+      // 화면 크기가 바뀌면 다시 정렬 (프레임당 1회로 제한)
+      var pending = false;
+      var schedule = function () {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(function () { pending = false; update(); });
+      };
+
+      if (window.ResizeObserver) {
+        var ro = new ResizeObserver(schedule);
+        tables.forEach(function (t) {
+          var code = t.querySelector('td.rouge-code');
+          if (code) ro.observe(code);
+        });
+      } else {
+        window.addEventListener('resize', schedule);
+      }
+
+      // 웹폰트 로딩 후 글자 폭이 바뀔 수 있으므로 한 번 더
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
